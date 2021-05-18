@@ -1,0 +1,47 @@
+version: '3.6'
+
+services:
+
+  app:
+    container_name: timetracker-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: timetracker_app
+    tty: true
+    env_file:
+      - secrets/local.env
+    volumes:
+      - .:/app:delegated
+    links:
+      - db-timetracker
+    depends_on:
+      - db-timetracker
+    ports:
+    - '0.0.0.0:8000:8000'
+    networks:
+      - default
+    command: python3 manage.py runserver 0.0.0.0:8000
+
+
+  db-timetracker:
+    container_name: db-timetracker
+    image: postgres:alpine
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: timetracker-db
+      POSTGRES_PORT: 5432
+    ports:
+      - '0.0.0.0:5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - default
+
+volumes:
+  db-data:
+
+networks:
+  default:
+    driver: bridge
