@@ -28,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+default_app_config = 'users.apps.UsersConfig'
+
 
 # Application definition
 
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'tracker.apps.TrackerConfig',
     'users.apps.UsersConfig',
     'drf_spectacular',
+    'channels',
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -62,7 +65,19 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
+}
+
+ASGI_APPLICATION = "asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('redis-timetracker', 6379)],
+        },
+    }
 }
 
 SPECTACULAR_SETTINGS = {

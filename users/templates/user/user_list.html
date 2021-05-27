@@ -1,0 +1,48 @@
+{% extends 'user/base.html' %}
+
+{% block content %}
+  <br>
+  <ul>
+    {% for user in users %}
+
+      <li data-username="{{ user.username|escape }}">
+        {{ user.username|escape }}: {{ user.status|default:'Offline' }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock content %}
+
+{% block script %}
+  <script>
+    var socket = new WebSocket('ws://' + window.location.host + '/ws/users/');
+
+    socket.onopen = function open() {
+      console.log('WebSockets connection created.');
+    };
+
+    socket.onmessage = function message(event) {
+      var event_json = JSON.parse(event.data);
+      var data = JSON.parse(event_json.message)
+      console.log(data)
+      // екануємо JavaScript щоб запобігти XSS-атакам
+      var username = encodeURI(data['username']);
+      console.log(username)
+      var user = $('li').filter(function () {
+        return $(this).data('username') == username;
+      });
+
+      console.log(data['is_logged_in'])
+
+      if (data['is_logged_in'] === true) {
+        user.html(username + ': Online');
+      }
+      else {
+        user.html(username + ': Offline');
+      }
+    };
+
+    if (socket.readyState == WebSocket.OPEN) {
+      socket.onopen();
+    }
+  </script>
+{% endblock script %}

@@ -89,6 +89,10 @@ class TaskList(generics.ListCreateAPIView):
     serializer_class = serializers.TaskSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
+    def get_queryset(self):
+        user = self.request.user
+        return models.Task.objects.filter(owner=user)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
@@ -97,6 +101,10 @@ class TaskDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Task.objects.all()
     serializer_class = serializers.TaskSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwnerOrReadOnly)
+
+    def get_queryset(self):
+        user = self.request.user
+        return models.Task.objects.filter(owner=user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

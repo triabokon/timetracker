@@ -1,4 +1,5 @@
-from django.shortcuts import redirect
+from django.contrib.auth import get_user_model
+from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from rest_framework import generics
@@ -34,3 +35,27 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveUpdateAPIView):
     queryset = models.CustomUser.objects.all()
     serializer_class = serializers.UserSerializer
+
+
+User = get_user_model()
+
+
+class OnlineUserList(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        users = User.objects.select_related('logged_in_user')
+        for user in users:
+            user.status = 'Online' if hasattr(user, 'logged_in_user') else 'Offline'
+        return render(request, 'user/user_list.html', {'users': users})
+
+
+class Chat(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, room_name, *args, **kwargs):
+        return render(request, 'user/chat.html', {
+            'room_name': room_name
+        })
