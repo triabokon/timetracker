@@ -1,8 +1,8 @@
 import enum
-from django.db import models
+
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres import fields
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth.models import PermissionsMixin
+from django.db import models
 from django.utils import timezone
 
 

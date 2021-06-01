@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br>
+<h1>Celery Tasks</h1>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">UUID</th>
+        <th scope="col">Args</th>
+        <th scope="col">Result</th>
+        <th scope="col">State</th>
+        <th scope="col">Time</th>
+    </tr>
+    </thead>
+    <tbody id="celery-tasks">
+    </tbody>
+</table>
+{% endblock content %}
+
+{% block script %}
+<script>
+    let ws = new WebSocket('ws://' + window.location.host + '/ws/monitor/');
+
+    function addRow(task) {
+        let table = document.getElementById("celery-tasks");
+        let row = table.insertRow(0);
+        let cell1 = row.insertCell(0);
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+        let cell4 = row.insertCell(3);
+        let cell5 = row.insertCell(4);
+        cell1.innerHTML = task.id;
+        cell2.innerHTML = task.args || 'None';
+        cell3.innerHTML = task.result;
+        cell4.innerHTML = task.state;
+        cell5.innerHTML = task.time;
+    }
+
+    ws.onopen = function () {
+        //Subscribe to the channel
+        console.log('WebSockets connection created.');
+    }
+
+    ws.onmessage = function (msg) {
+        let task = JSON.parse(JSON.parse(msg.data).message);
+        addRow(task)
+    }
+</script>
+{% endblock %}

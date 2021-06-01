@@ -23,6 +23,43 @@ services:
       - default
     command: python3 manage.py runserver 0.0.0.0:8000
 
+  celery:
+    container_name: timetracker-celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: timetracker_app
+    tty: true
+    env_file:
+      - secrets/local.env
+    volumes:
+      - .:/app:delegated
+    links:
+      - redis-timetracker
+    depends_on:
+      - redis-timetracker
+#    ports:
+#      - '0.0.0.0:8000:8000'
+    networks:
+      - default
+    command: celery -A tracker worker -E -Q email,task_report -l info
+
+  celery-monitor:
+    container_name: timetracker-celery-monitor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: timetracker_app
+    tty: true
+    env_file:
+      - secrets/local.env
+    volumes:
+      - .:/app:delegated
+    links:
+      - redis-timetracker
+    depends_on:
+      - redis-timetracker
+    command: python3 -u celery_monitor.py
 
   db-timetracker:
     container_name: db-timetracker
